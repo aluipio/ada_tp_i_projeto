@@ -24,6 +24,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\paulo\dados\all_sales.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
