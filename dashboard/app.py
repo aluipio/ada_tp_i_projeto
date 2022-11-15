@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd  
 import plotly.express as px 
 import streamlit as st  
+import os
 
 import lib.all_sales as all_sales
 import lib.monthly_sales as monthly_sales
@@ -14,6 +15,10 @@ st.set_page_config(
     page_icon="✅",
     layout="wide",
 )
+
+# Cria pasta dataset, caso não exista
+if not os.path.isdir("dataset"):
+    os.mkdir('dataset')
 
 ###########################################################################
 ##### Carrega Dados
