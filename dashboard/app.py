@@ -20,46 +20,31 @@ st.set_page_config(
 if not os.path.isdir("dataset"):
     os.mkdir('dataset')
 
-    
-###########################################################################
-##### Carrega Dados
-###########################################################################
-
-# df_all_sales = pd.read_csv(DIR_DATA + 'all_sales.csv')
+# Carrega Dados
 df_all_sales = all_sales.load_data_all_sales()
 
 def load_dados(df_all_sales):
-    # df_monthly_sales = pd.read_csv(DIR_DATA + 'monthly_sales.csv')
     df_monthly_sales = monthly_sales.load_data_monthly_sales(df_all_sales)
-
-    # df_weekly_price = pd.read_csv(DIR_DATA + 'weekly_price.csv')
     df_weekly_price = weekly_price.load_data_weekly_price(df_all_sales)
-
-    # df_monthly_revenue = pd.read_csv(DIR_DATA + 'monthly_revenue.csv', sep=";")
     df_monthly_revenue = monthly_revenue.load_data_monthly_revenue(df_all_sales, df_weekly_price)
     df_monthly_revenue = df_monthly_revenue.sort_values(by=['month_year'], ascending=True, na_position='first')
-
     return df_monthly_sales, df_weekly_price, df_monthly_revenue
-
 
 # Carrega Primeira Semana
 if df_all_sales.shape[0] == 0:
-
     st.title(f"Quitanda vazia")
-
     if st.button('Carregar Primeira Semana'):
         df_all_sales = all_sales.load_one_week(r'http://localhost:3000/api/ep1')
         df_monthly_sales, df_weekly_price, df_monthly_revenue = load_dados(df_all_sales)    
 
-# Carrega Primeira Semana
-else:
+
+else: 
 
     df_monthly_sales, df_weekly_price, df_monthly_revenue = load_dados(df_all_sales)
 
-    ###########################################################################
-    ###### Carrega SideBar
-    ###########################################################################
-    with st.sidebar:
+    
+  
+    with st.sidebar: # Carrega SideBar
 
         st.title(f"Quitanda BR")
 
@@ -80,9 +65,7 @@ else:
         with st.spinner("Loading..."):
             rd_view = st.radio("Visualização:", ('Geral', 'Produtos', 'DataFrame'))
 
-    ###########################################################################
-    ##### Rotulo de Produtos e Preços 
-    ###########################################################################
+    # Rotulo de Produtos e Preços 
 
     PRODUTOS_LABEL = [["prod_0","Banana","Unidade",0.2],
     ["prod_1","Melão","Unidade",0.5],
@@ -109,9 +92,7 @@ else:
     df_produtos = pd.DataFrame(PRODUTOS_LABEL, columns=['id','name','medida','preco'])
     df_produtos = df_produtos.sort_values(by='name', ascending=True, na_position='first')
 
-    ###########################################################################
-    #####  Aba Produtos
-    ###########################################################################
+    # Aba Produtos
 
     if rd_view == 'Produtos':
 
@@ -132,7 +113,6 @@ else:
             col1, col2, col3 = st.columns(3)
             col1.metric("Produto", produto[1])
             col2.metric("Medida", produto[2])
-            #col3.metric("Preço da Medida", "R$ " + str(round(produto[3],2)))
             col3.metric("Preço Atual", f"R$ {(preco_atual).round(2)}",(preco_atual-preco_anterior).round(2), "inverse")
 
         if produto[0] in list(df_monthly_revenue.columns):
@@ -154,7 +134,8 @@ else:
                     fig = px.bar(data_frame=df_temp[produto[0]], color=df_temp[produto[0]].index)
                     fig.update_layout(
                         yaxis_title=produto[2],
-                        xaxis_title="Anos"
+                        xaxis_title="Anos",
+                        showlegend=False
                     )
                     st.write(fig)
 
@@ -291,10 +272,8 @@ else:
         else:
             st.markdown("### Transações realizadas")
             st.dataframe(df_all_sales)
-
-    ###########################################################################
-    #####  Aba Principal
-    ###########################################################################
+  
+    #  Aba Principal
 
     else:
 
@@ -343,7 +322,6 @@ else:
                 label="Balanço Total R＄",
                 value=f"R$ {moeda(balance)} "
             )
-            # delta=-round(balance) * 100,
 
             # create two columns for charts
             fig_col1, fig_col2 = st.columns(2)
@@ -351,10 +329,11 @@ else:
                 # Grágico 1
                 st.markdown("### Volume total por produto")
                 df_temp_by_produto = df_monthly_revenue.iloc[:,0:8].sum().to_frame()
-                fig = px.bar(df_temp_by_produto, color=df_temp_by_produto.index)
+                fig = px.bar(df_temp_by_produto, color=df_temp_by_produto.index, orientation='h')
                 fig.update_layout(
-                    yaxis_title="Unidades",
-                    xaxis_title="Produtos"
+                    xaxis_title="Unidades",
+                    yaxis_title="Produtos",
+                    showlegend=False
                 )    
                 st.write(fig)
 
@@ -365,18 +344,21 @@ else:
                 fig2 = px.bar(data_frame=df_temp_by_ano, color=df_temp_by_ano.index)
                 fig2.update_layout(
                     yaxis_title="Volume (kg + unidade)",
-                    xaxis_title="Anos"
-                )                
+                    xaxis_title="Anos",
+                    showlegend=False
+                )       
+                        
                 st.write(fig2)
                 
             with fig_col2:
                 # Grágico 2
                 st.markdown("### Volume total (kg) por produto")
                 df_temp_by_produto = df_monthly_revenue.iloc[:,8:16].sum().to_frame()
-                fig = px.bar(df_temp_by_produto, color=df_temp_by_produto.index)
+                fig = px.bar(df_temp_by_produto, color=df_temp_by_produto.index, orientation='h')
                 fig.update_layout(
-                    yaxis_title="Peso (kg)",
-                    xaxis_title="Produtos"
+                    xaxis_title="Peso (kg)",
+                    yaxis_title="Produtos",
+                    showlegend=False
                 )    
                 st.write(fig)
             

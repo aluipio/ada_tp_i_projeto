@@ -2,7 +2,7 @@ import pandas as pd
 import math
 import os.path
 
-# By: Rafael
+
 
 def weekly_price(df_all_sales):
 
@@ -19,9 +19,8 @@ def weekly_price(df_all_sales):
     #deixando apenas valores não negativos e trocando NaN por 0
     only_week_product = only_week_product[only_week_product>0].fillna(0)
     # agrupando por semanas, usar group_week.describe() para ver como ficou
-    group_week = only_week_product.groupby('n_week')
-    # criando DataFrame com a média de vendas dos produtos em cada semana
-    mean_week = group_week.mean()
+    mean_week = only_week_product.groupby('n_week').mean()
+    
 
     #criando DataFrame para os preços
     prices = mean_week[mean_week==0].fillna(0)
