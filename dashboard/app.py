@@ -20,6 +20,7 @@ st.set_page_config(
 if not os.path.isdir("dataset"):
     os.mkdir('dataset')
 
+    
 ###########################################################################
 ##### Carrega Dados
 ###########################################################################
@@ -117,7 +118,7 @@ else:
         st.title("Análise de Produtos")
         
         # Seleciona o Produto desejado
-        sb_produto = st.selectbox("Selecione o projeto", df_produtos['name'].values)
+        sb_produto = st.selectbox("Selecione o produto:", df_produtos['name'].values)
 
         # creating a single-element container
         produtos_placeholder_1 = st.empty()
@@ -132,7 +133,7 @@ else:
             col1.metric("Produto", produto[1])
             col2.metric("Medida", produto[2])
             #col3.metric("Preço da Medida", "R$ " + str(round(produto[3],2)))
-            col3.metric("Preço da Medida", f"R$ {(preco_atual).round(2)}",(preco_atual-preco_anterior).round(2), "inverse")
+            col3.metric("Preço Atual", f"R$ {(preco_atual).round(2)}",(preco_atual-preco_anterior).round(2), "inverse")
 
         if produto[0] in list(df_monthly_revenue.columns):
             
@@ -142,7 +143,7 @@ else:
                 # create two columns for charts
                 produtos_fig_col1, produtos_fig_col2 = st.columns(2)
                 with produtos_fig_col1:
-                    st.markdown("### Volume TOTAL ANO")
+                    st.markdown("### Volume total por ano")
 
                     # Cria DF temporário
                     df_monthly_sales_temp = df_monthly_sales.copy()
@@ -152,8 +153,8 @@ else:
                     # Gráfico 01
                     fig = px.bar(data_frame=df_temp[produto[0]], color=df_temp[produto[0]].index)
                     fig.update_layout(
-                        yaxis_title="Volume",
-                        xaxis_title="anos"
+                        yaxis_title=produto[2],
+                        xaxis_title="Anos"
                     )
                     st.write(fig)
 
@@ -162,7 +163,7 @@ else:
                     # st.dataframe(df_temp[produto[0]])
                     
                 with produtos_fig_col2:
-                    st.markdown("### Montante negociado por ANO e MÊS")
+                    st.markdown("### Montante negociado mês")
 
                     # Filtra o Produtos
                     _filter = produto[0]
@@ -189,8 +190,8 @@ else:
                                 showline=False,
                                 showticklabels=True,
                             ),
-                            yaxis_title="Montante",
-                            xaxis_title="Meses e Anos"
+                            yaxis_title="Montante (R$)",
+                            xaxis_title="Meses"
                         )
                         # st.write(fig3)
                         st.plotly_chart(fig3, use_container_width=True)
@@ -200,7 +201,7 @@ else:
             
             produtos_placeholder_3 = st.empty()
             with produtos_placeholder_3.container():
-                st.markdown("### Comportamento de preço ao longo do tempo")
+                st.markdown("### Comportamento de preço")
 
                 # Dados das Semanas
                 df_date_weeks = df_all_sales[['n_week','week_year','month_year']].drop_duplicates(subset='n_week', keep='first')
@@ -232,11 +233,11 @@ else:
                         showticklabels=True,
                     ),
                     yaxis_title=f"Preço da {produto[1]}",
-                    xaxis_title="Meses e Anos"
+                    xaxis_title="Tempo"
                 )
                 st.plotly_chart(fig_produto, use_container_width=True)
                 
-                st.markdown("### Montante Vendido ao longo do tempo")
+                st.markdown("### Montante vendido")
                 df_temp_produto = df_monthly_revenue[['month_year', produto[0]]]
                 df_temp_produto.set_index('month_year', inplace=True)
 
@@ -262,8 +263,8 @@ else:
                         showline=False,
                         showticklabels=True,
                     ),
-                    yaxis_title="Montante",
-                    xaxis_title="Meses e Anos"
+                    yaxis_title="Montante (R$)",
+                    xaxis_title="Tempo"
                 )
                 st.plotly_chart(fig_produto, use_container_width=True)
 
@@ -340,38 +341,47 @@ else:
 
             kpi4.metric(
                 label="Balanço Total R＄",
-                value=f"R$ {moeda(balance)} ",
-                delta=-round(balance) * 100,
+                value=f"R$ {moeda(balance)} "
             )
+            # delta=-round(balance) * 100,
 
             # create two columns for charts
             fig_col1, fig_col2 = st.columns(2)
             with fig_col1:
-                st.markdown("### Volume TOTAL por produto")
-                
                 # Grágico 1
-                df_temp_by_produto = df_monthly_revenue.iloc[:,0:16].sum().to_frame()
+                st.markdown("### Volume total por produto")
+                df_temp_by_produto = df_monthly_revenue.iloc[:,0:8].sum().to_frame()
                 fig = px.bar(df_temp_by_produto, color=df_temp_by_produto.index)
                 fig.update_layout(
-                    yaxis_title="Volume",
+                    yaxis_title="Unidades",
                     xaxis_title="Produtos"
                 )    
                 st.write(fig)
 
-                st.markdown("### Volume TOTAL ANO")
-
-                # Grágico 2
+                # Grágico 3
+                st.markdown("### Volume total por ano")     
                 df_all_sales['date'] = pd.to_datetime(df_all_sales['date'])
                 df_temp_by_ano = df_all_sales['date'].dt.year.value_counts()
                 fig2 = px.bar(data_frame=df_temp_by_ano, color=df_temp_by_ano.index)
                 fig2.update_layout(
-                    yaxis_title="Volume",
+                    yaxis_title="Volume (kg + unidade)",
                     xaxis_title="Anos"
                 )                
                 st.write(fig2)
                 
             with fig_col2:
-                st.markdown("### Volume TOTAL por MÊS e ANO")
+                # Grágico 2
+                st.markdown("### Volume total (kg) por produto")
+                df_temp_by_produto = df_monthly_revenue.iloc[:,8:16].sum().to_frame()
+                fig = px.bar(df_temp_by_produto, color=df_temp_by_produto.index)
+                fig.update_layout(
+                    yaxis_title="Peso (kg)",
+                    xaxis_title="Produtos"
+                )    
+                st.write(fig)
+            
+                # Grágico 4
+                st.markdown("### Volume total por mês")
 
                 # Prepara DataFrame
                 df_monthly_sales_temp = df_monthly_sales.copy()
@@ -379,7 +389,6 @@ else:
                 df_monthly_sales_temp['month'] =  df_monthly_sales_temp.index.map(lambda x: x[5:])
                 df_monthly_sales_temp['year'] =  df_monthly_sales_temp.index.map(lambda x: x[0:4])
 
-                # Terceiro Gráfico
                 fig3 = px.line(data_frame=df_monthly_sales_temp, x="month", y='total', color='year', markers=True)
                 fig3.update_layout(
                     xaxis=dict(
@@ -401,8 +410,8 @@ else:
                         showline=False,
                         showticklabels=True,
                     ),
-                    yaxis_title="Volume",
-                    xaxis_title="Meses e anos"
+                    yaxis_title="(kg + unidade)",
+                    xaxis_title="Meses"
                 )
                 # st.write(fig3)
                 st.plotly_chart(fig3, use_container_width=True)
